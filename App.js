@@ -1,102 +1,59 @@
-import React, { Component } from 'react';
-import { Text, View, StyleSheet, Button, Alert } from 'react-native';
-import { Constants, Google } from 'expo';
-import Home from './src/home/Home';
+import React, { Component } from "react";
+import { StatusBar } from "react-native";
+import { StyleProvider } from "native-base";
+import Expo,{ Font, AppLoading } from "expo";
 
-export default class App extends React.Component {
+import HomeScreen from './src/home/app';
 
-	constructor(props) {
-		super(props);
 
-		this.state = {
-			auth: true,
-			accessToken: ''
-		}
+export default class App extends Component {
 
-		this.setAuth = this.setAuth.bind(this);
-	}
+    constructor() {
 
-	_handleGoogleLogin = async () => {
-		try {
-			var scope = 'profile https://www.googleapis.com/auth/fitness.activity.write https://www.googleapis.com/auth/fitness.body.write https://www.googleapis.com/auth/fitness.location.write https://www.googleapis.com/auth/fitness.nutrition.write';
-			const { type, user, accessToken } = await Google.logInAsync({
-				androidClientId: '361517549410-tioe1b3pek3ljnuhkr39jt0g9laifq96.apps.googleusercontent.com',
-				androidStandaloneAppClientId: '361517549410-c65fpq92ppiiag7cv3ond8j8m1g3d4i1.apps.googleusercontent.com',
-				iosClientId: '583659066312-ph4u33j8m58ak6720ko0a44eu9gu6lgh.apps.googleusercontent.com',
-				webClientId: '583659066312-apbaumdnf5f80ak7v1clgp11q1otq3fq.apps.googleusercontent.com',
-				scopes: [scope, 'email']
-			});
+        super();
+        
+        this.state = {
 
-			switch (type) {
-				case 'success': {
-					this.setState({accessToken: accessToken});
-					this.setState({auth: false});
-					break;
-				}
-				case 'cancel': {
-					Alert.alert(
-						'Cancelled!',
-						'Login was cancelled!',
-					);
-					break;
-				}
-				default: {
-					Alert.alert(
-						'Oops!',
-						'Login failed!',
-					);
-				}
-			};
-		}
-		catch (e) {
-			Alert.alert(
-				'Oops!',
-				'Login failed!',
-			);
-		}
-	};
+            isReady: false
 
-	setAuth() {
-		this.setState({auth: true});
-	}
+        };
 
-	render() {
-		return (
-			this.state.auth ? 
-				<View style={styles.container}>
-					<Button
-					title="Login with Google"
-					onPress={this._handleGoogleLogin}
-					color="#183739"
-					/>
-				</View>
-			:
-				// <Home setAuth={this.setAuth} accessToken={this.state.accessToken} />
-				<View style={styles.container}>
-					<Button
-					title="Test"
-					onPress={this._handleGoogleLogin}
-					color="#183739"
-					/>
-				</View>
+        StatusBar.setHidden(true);
 
-		);
-	}
+        console.disableYellowBox = true;
+    }
+
+    async componentWillMount() {
+
+        this.setState({ isReady: true });
+    }
+
+    render() {
+
+        if (!this.state.isReady) {
+
+            return <Expo.AppLoading
+
+                startAsync={this._loadResourcesAsync}
+            />;
+        }
+        return <HomeScreen />;
+    }
 }
 
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		alignItems: 'center',
-		justifyContent: 'center',
-		paddingTop: Constants.statusBarHeight,
-		backgroundColor: '#162631',
-	},
-	paragraph: {
-		margin: 24,
-		fontSize: 18,
-		fontWeight: 'bold',
-		textAlign: 'center',
-		color: '#34495e',
-	},
-});
+_loadResourcesAsync = async () => {
+    return Promise.all([
+        Asset.loadAsync([
+            // require('./assets/images/robot-dev.png'),
+            // require('./assets/images/robot-prod.png'),
+        ]),
+        Font.loadAsync([
+           
+            // Ionicons.font,
+
+            // { 'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf') },
+        ]),
+    ]);
+};
+
+export { App };
